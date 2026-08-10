@@ -71,6 +71,14 @@ export default function Planner() {
   };
 
   const prev = () => {
+    if (currentStep === 1) {
+      if (typeof window !== 'undefined' && window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = '/#destinations';
+      }
+      return;
+    }
     setCurrentStep(s => Math.max(s - 1, 1));
     window.scrollTo(0, 0);
   };
@@ -135,6 +143,16 @@ export default function Planner() {
           {/* Step 1 */}
           {currentStep === 1 && (
             <div className="step-content active">
+              <div style={{ marginBottom: '1rem' }}>
+                <button
+                  type="button"
+                  onClick={prev}
+                  className="btn btn-outline"
+                  style={{ padding: '0.4rem 1rem', fontSize: '0.88rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                >
+                  <i className="fa-solid fa-arrow-left"></i> Back to Destinations
+                </button>
+              </div>
               <h2 className="step-title">Where do you want to go?</h2>
               <p className="step-subtitle">Select one or more destinations you&apos;d like to include.</p>
               <div className="selection-grid dest-selector">
@@ -288,7 +306,9 @@ export default function Planner() {
           )}
 
           <div className="step-nav" style={{ padding: '0 3rem 3rem 3rem' }}>
-            <button type="button" className="btn btn-outline" onClick={prev} style={{ display: currentStep === 1 ? 'none' : 'inline-block' }}>Back</button>
+            <button type="button" className="btn btn-outline" onClick={prev} style={{ display: 'inline-block' }}>
+              <i className="fa-solid fa-arrow-left"></i> {currentStep === 1 ? 'Back to Destinations' : 'Back'}
+            </button>
             <div style={{ flexGrow: 1 }}></div>
             {currentStep < 6 ? (
               <button type="button" className="btn btn-primary" onClick={next}>Continue to Step {currentStep + 1} <i className="fa-solid fa-arrow-right"></i></button>

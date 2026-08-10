@@ -8,6 +8,7 @@ export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
   const submit = async (e: React.FormEvent) => {
@@ -45,7 +46,11 @@ export default function Login() {
           </div>
           <div className="form-group" style={{ marginBottom: '1rem' }}>
             <label>Password</label>
-            <input type="password" className="form-control" placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required />
+            <input type={showPassword ? 'text' : 'password'} className="form-control" placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required />
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', cursor: 'pointer', fontSize: '0.88rem', color: '#444' }}>
+              <input type="checkbox" checked={showPassword} onChange={e => setShowPassword(e.target.checked)} style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#173D2F' }} />
+              Show password
+            </label>
           </div>
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginBottom: '1rem' }}>Login</button>
         </form>

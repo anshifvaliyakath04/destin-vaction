@@ -423,7 +423,7 @@ section {
 /* Packages */
 .packages-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
 }
 
@@ -1222,7 +1222,7 @@ th {
     margin-bottom: 2rem;
 }
 .dest-selector {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 }
 .select-card {
     border: 2px solid #eee;
@@ -1294,6 +1294,28 @@ th {
 
 /* Form Controls Override */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+/* Small phones (480px and below) */
+@media (max-width: 480px) {
+  .hero-content h1 { font-size: 2rem; }
+  .hero-content p { font-size: 1.1rem; }
+  .hero-buttons { flex-direction: column; align-items: center; }
+  .section-title { font-size: 1.8rem; }
+  .planner-form { padding: 1.5rem; }
+  .step-content { padding: 1.5rem; }
+  .step-title { font-size: 1.5rem; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .dest-selector { grid-template-columns: repeat(2, 1fr); }
+  .selection-grid { grid-template-columns: repeat(2, 1fr); }
+  .modal-content { padding: 1.5rem 1rem; }
+  .auth-card { padding: 2rem 1.5rem; }
+  .packages-grid { grid-template-columns: 1fr; }
+  .destinations-grid { grid-template-columns: 1fr; }
+  .container { padding: 0 1rem; }
+  .categories-banner { border-radius: 10px; }
+  .cat-grid { gap: 1rem; }
+  .cat-item { width: 45%; }
+}
 
 /* Navigation Buttons */
 .step-nav {

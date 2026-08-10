@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       console.error('Failed to send OTP email:', emailErr);
     }
 
-    return NextResponse.json({ message: 'OTP sent to your email', otp });
+    return NextResponse.json({ message: 'OTP sent to your email' });
   } catch (error) {
     console.error('Forgot password error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });

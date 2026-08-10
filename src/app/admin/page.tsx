@@ -65,6 +65,16 @@ export default function Admin() {
 
   const [showAddTrip, setShowAddTrip] = useState(false);
   const [showChangeCred, setShowChangeCred] = useState(false);
+  const [showAdminCredPassword, setShowAdminCredPassword] = useState(false);
+  const [credMode, setCredMode] = useState<'direct' | 'otp'>('direct');
+  const [adminOtpStep, setAdminOtpStep] = useState<1 | 2 | 3>(1);
+  const [adminEmailInput, setAdminEmailInput] = useState('');
+  const [adminOtpCode, setAdminOtpCode] = useState('');
+  const [adminOtpNewPassword, setAdminOtpNewPassword] = useState('');
+  const [adminOtpConfirmPassword, setAdminOtpConfirmPassword] = useState('');
+  const [adminOtpLoading, setAdminOtpLoading] = useState(false);
+  const [adminOtpError, setAdminOtpError] = useState('');
+  const [adminOtpSuccess, setAdminOtpSuccess] = useState('');
   const [activeTab, setActiveTab] = useState<'trips' | 'testimonials' | 'settings'>('trips');
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
 
@@ -78,6 +88,7 @@ export default function Admin() {
       window.location.href = '/login';
       return;
     }
+    if (user?.email) setAdminEmailInput(user.email);
     fetchTrips();
     fetchTestimonials();
     fetchSettings();
@@ -186,11 +197,7 @@ export default function Admin() {
     }
   };
 
-  const [credMode, setCredMode] = useState<'direct' | 'otp'>('direct');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [otpNewPassword, setOtpNewPassword] = useState('');
-  const [otpLoading, setOtpLoading] = useState(false);
+  // ─── Settings & Security Handlers ─────────────────────────────────────────
 
   const saveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,58 +229,104 @@ export default function Admin() {
     }
   };
 
-  const handleSendAdminOtp = async () => {
-    setOtpLoading(true);
+  const handleSendAdminOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminOtpError('');
+    setAdminOtpSuccess('');
+    if (!adminEmailInput.trim()) {
+      setAdminOtpError('Please enter a valid email address.');
+      return;
+    }
+    setAdminOtpLoading(true);
     try {
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email }),
+        body: JSON.stringify({ email: adminEmailInput.trim() }),
       });
       const data = await res.json();
       if (res.ok) {
-        setOtpSent(true);
-        alert(`OTP verification code has been sent to ${user.email}`);
+        setAdminOtpStep(2);
+        setAdminOtpSuccess(`OTP code sent to ${adminEmailInput.trim()}. Check your inbox.`);
       } else {
-        alert(data.error || 'Failed to send OTP email');
+        setAdminOtpError(data.error || 'Failed to send OTP email.');
       }
     } catch {
-      alert('Error sending OTP email.');
+      setAdminOtpError('Error sending OTP email.');
     } finally {
-      setOtpLoading(false);
+      setAdminOtpLoading(false);
     }
   };
 
-  const handleVerifyAndResetAdminOtp = async (e: React.FormEvent) => {
+  const handleVerifyAdminOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setOtpLoading(true);
+    setAdminOtpError('');
+    setAdminOtpSuccess('');
+    if (adminOtpCode.trim().length < 6) {
+      setAdminOtpError('Please enter all 6 digits of the OTP code.');
+      return;
+    }
+    setAdminOtpLoading(true);
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: adminEmailInput.trim(), otp: adminOtpCode.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAdminOtpStep(3);
+        setAdminOtpSuccess('OTP verified successfully! Set your new password below.');
+      } else {
+        setAdminOtpError(data.error || 'Invalid or expired OTP code.');
+      }
+    } catch {
+      setAdminOtpError('Error verifying OTP code.');
+    } finally {
+      setAdminOtpLoading(false);
+    }
+  };
+
+  const handleResetAdminPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminOtpError('');
+    setAdminOtpSuccess('');
+    if (adminOtpNewPassword.length < 6) {
+      setAdminOtpError('Password must be at least 6 characters.');
+      return;
+    }
+    if (adminOtpNewPassword !== adminOtpConfirmPassword) {
+      setAdminOtpError('Passwords do not match.');
+      return;
+    }
+    setAdminOtpLoading(true);
     try {
       const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, otp: otpCode, newPassword: otpNewPassword }),
+        body: JSON.stringify({ email: adminEmailInput.trim(), otp: adminOtpCode.trim(), newPassword: adminOtpNewPassword }),
       });
       const data = await res.json();
       if (res.ok) {
-        alert('Password reset successfully via OTP! Please login with your new password.');
+        alert('Password reset successfully via OTP! Please log in with your new password.');
         setShowChangeCred(false);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
       } else {
-        alert(data.error || 'Failed to reset password.');
+        setAdminOtpError(data.error || 'Failed to reset password.');
       }
     } catch {
-      alert('Error resetting password.');
+      setAdminOtpError('Error resetting password.');
     } finally {
-      setOtpLoading(false);
+      setAdminOtpLoading(false);
     }
   };
 
   // ─── Filtering ───────────────────────────────────────────────────────────────
   const filteredTrips = (trips || []).filter(t => {
     const q = filterDest.trim().toLowerCase();
-    const searchMatch = !q || 
+    const searchMatch = !q ||
       (t.destinations || '').toLowerCase().includes(q) ||
       (t.user_name || '').toLowerCase().includes(q) ||
       (t.user_email || '').toLowerCase().includes(q) ||
@@ -285,40 +338,103 @@ export default function Admin() {
     const statusMatch = !filterStatus || (t.status || '').trim().toLowerCase() === filterStatus.trim().toLowerCase();
     const paymentMatch = !filterPaymentStatus || (t.payment_status || '').trim().toLowerCase() === filterPaymentStatus.trim().toLowerCase();
 
-    const createdDateStr = t.created_at ? t.created_at.slice(0, 10) : '';
-    const startDateStr = t.start_date ? t.start_date.slice(0, 10) : '';
+    // Date filtering: filter by start date or booking date between filterDateFrom & filterDateTo
+    const dateStr = t.start_date ? t.start_date.slice(0, 10) : (t.created_at ? t.created_at.slice(0, 10) : '');
 
-    const fromMatch = !filterDateFrom || (createdDateStr >= filterDateFrom || startDateStr >= filterDateFrom);
-    const toMatch = !filterDateTo || (createdDateStr <= filterDateTo || startDateStr <= filterDateTo);
+    const fromMatch = !filterDateFrom || (dateStr !== '' && dateStr >= filterDateFrom);
+    const toMatch = !filterDateTo || (dateStr !== '' && dateStr <= filterDateTo);
 
     return searchMatch && typeMatch && statusMatch && paymentMatch && fromMatch && toMatch;
   });
 
-  // ─── Export to Excel ─────────────────────────────────────────────────────────
-  const exportToExcel = async () => {
+  // ─── Export to Excel (shared helper) ────────────────────────────────────────
+  const buildExcelFile = async (sourceTrips: Trip[], fileLabel: string, summaryLabel: string) => {
     const XLSX = await import('xlsx');
-    const rows = filteredTrips.map(t => ({
-      'Customer Name': t.user_name,
-      'Email': t.user_email,
-      'Phone': t.user_phone,
-      'WhatsApp': t.user_whatsapp,
-      'Destinations': t.destinations,
-      'Duration': t.duration,
-      'Start Date': t.start_date || '',
-      'Adults': t.adults,
-      'Children': t.children,
-      'Travel Type': t.travel_type,
-      'Pickup Location': t.pickup_location,
-      'Food Preference': t.food_pref || '',
-      'Special Requests': t.special_requests || '',
-      'Status': t.status,
-      'Payment Status': t.payment_status,
-      'Booked On': new Date(t.created_at).toLocaleDateString('en-IN'),
+
+    if (sourceTrips.length === 0) {
+      alert('No records to export for the selected range.');
+      return;
+    }
+
+    // ── Data rows ──
+    const rows = sourceTrips.map(t => ({
+      'Customer Name':      t.user_name,
+      'Email':              t.user_email,
+      'Phone':              t.user_phone,
+      'WhatsApp':           t.user_whatsapp,
+      'Destinations':       t.destinations,
+      'Duration':           t.duration,
+      'Start Date':         t.start_date ? new Date(t.start_date).toLocaleDateString('en-IN') : '',
+      'Adults':             t.adults,
+      'Children':           t.children,
+      'Travel Type':        t.travel_type,
+      'Pickup Location':    t.pickup_location,
+      'Food Preference':    t.food_pref || '',
+      'Special Requests':   t.special_requests || '',
+      'Approval Status':    t.status,
+      'Payment Status':     t.payment_status,
+      'Estimated Price (₹)': t.estimated_price > 0 ? t.estimated_price : '',
+      'Booked On':          new Date(t.created_at).toLocaleDateString('en-IN'),
     }));
+
     const ws = XLSX.utils.json_to_sheet(rows);
+    const colWidths = Object.keys(rows[0] || {}).map(key => ({
+      wch: Math.max(key.length + 2, ...rows.map(r => String((r as Record<string, unknown>)[key] ?? '').length + 2))
+    }));
+    ws['!cols'] = colWidths;
+
+    // ── Summary sheet ──
+    const totalCount    = sourceTrips.length;
+    const approvedCount = sourceTrips.filter(t => t.status === 'Approved').length;
+    const pendingCount  = sourceTrips.filter(t => t.status === 'Pending').length;
+    const rejectedCount = sourceTrips.filter(t => t.status === 'Rejected').length;
+    const paidCount     = sourceTrips.filter(t => t.payment_status === 'Paid').length;
+    const totalRevenue  = sourceTrips.reduce((sum, t) => sum + (t.estimated_price || 0), 0);
+
+    const summaryRows = [
+      { 'Metric': 'Export Date',                  'Value': new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) },
+      { 'Metric': 'Records Exported',             'Value': summaryLabel },
+      { 'Metric': '',                              'Value': '' },
+      { 'Metric': '--- Booking Stats ---',         'Value': '' },
+      { 'Metric': 'Total Bookings',                'Value': totalCount },
+      { 'Metric': 'Approved',                      'Value': approvedCount },
+      { 'Metric': 'Pending',                       'Value': pendingCount },
+      { 'Metric': 'Rejected',                      'Value': rejectedCount },
+      { 'Metric': '',                              'Value': '' },
+      { 'Metric': '--- Revenue ---',               'Value': '' },
+      { 'Metric': 'Total Estimated Revenue (₹)',   'Value': totalRevenue.toLocaleString('en-IN') },
+      { 'Metric': 'Paid Bookings',                 'Value': paidCount },
+      { 'Metric': '',                              'Value': '' },
+      { 'Metric': '--- By Travel Type ---',        'Value': '' },
+      ...['Solo', 'Couple', 'Family', 'Group'].map(type => ({
+        'Metric': type,
+        'Value': sourceTrips.filter(t => (t.travel_type || '').toLowerCase() === type.toLowerCase()).length,
+      })),
+    ];
+    const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
+    wsSummary['!cols'] = [{ wch: 34 }, { wch: 28 }];
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Trip Bookings');
-    XLSX.writeFile(wb, `destin-trips-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+    XLSX.writeFile(wb, `destin-trips_${fileLabel}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
+  // ── Export: current filtered view ──
+  const exportToExcel = () => {
+    const hasDateFilter = Boolean(filterDateFrom || filterDateTo);
+    const label = hasDateFilter
+      ? `trips_${filterDateFrom || 'start'}_to_${filterDateTo || 'today'}`
+      : 'filtered_trips';
+    const summaryLabel = hasDateFilter
+      ? `Start Date: ${filterDateFrom || 'Start'} → End Date: ${filterDateTo || 'Today'}`
+      : 'All filtered trips';
+    buildExcelFile(filteredTrips, label, summaryLabel);
+  };
+
+  // ── Export: all trips (no filter) ──
+  const exportAllToExcel = () => {
+    buildExcelFile(trips, 'all_trips', 'All Trips List');
   };
 
   const clearFilters = () => {
@@ -383,14 +499,24 @@ export default function Admin() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <h3 style={{ margin: 0 }}>
                   Planned Trips{' '}
-                  <span style={{ fontWeight: 400, fontSize: '0.9rem', color: '#888' }}>({filteredTrips.length} shown)</span>
+                  <span style={{ fontWeight: 400, fontSize: '0.9rem', color: '#888' }}>({filteredTrips.length} shown / {trips.length} total)</span>
                 </h3>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {/* Export Filtered */}
                   <button
                     onClick={exportToExcel}
-                    style={{ background: '#1D6F42', color: 'white', border: 'none', padding: '0.5rem 1.2rem', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, fontSize: '0.9rem' }}
+                    title="Export currently filtered trips to Excel"
+                    style={{ background: '#1D6F42', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, fontSize: '0.85rem' }}
                   >
-                    <i className="fa-solid fa-file-excel"></i> Export to Excel
+                    <i className="fa-solid fa-file-excel"></i> Export Filtered ({filteredTrips.length})
+                  </button>
+                  {/* Export All */}
+                  <button
+                    onClick={exportAllToExcel}
+                    title="Export ALL trips in Excel format"
+                    style={{ background: '#0f4c75', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, fontSize: '0.85rem' }}
+                  >
+                    <i className="fa-solid fa-file-excel"></i> Export All ({trips.length})
                   </button>
                   <button className="btn btn-primary" style={{ padding: '0.5rem 1.2rem' }} onClick={() => setShowAddTrip(true)}>
                     <i className="fa-solid fa-plane-departure"></i> Add New Trip
@@ -400,13 +526,14 @@ export default function Admin() {
 
               {/* Filter Bar */}
               <div style={{ background: '#f7f9fc', border: '1px solid #e8ecf0', borderRadius: '10px', padding: '1rem', marginBottom: '1.2rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
                   <i className="fa-solid fa-filter" style={{ color: '#173d32' }}></i>
                   <strong style={{ fontSize: '0.9rem' }}>Filters</strong>
                   <button onClick={clearFilters} style={{ marginLeft: 'auto', background: 'none', border: '1px solid #ccc', padding: '0.2rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: '#666' }}>
                     Clear All
                   </button>
                 </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.75rem' }}>
                   <div>
                     <label style={{ fontSize: '0.75rem', color: '#666', display: 'block', marginBottom: '0.25rem' }}>Search</label>
@@ -458,21 +585,21 @@ export default function Admin() {
                     </select>
                   </div>
                   <div>
-                    <label style={{ fontSize: '0.75rem', color: '#666', display: 'block', marginBottom: '0.25rem' }}>Date From</label>
+                    <label style={{ fontSize: '0.75rem', color: '#166534', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>📅 Start Date</label>
                     <input
                       type="date"
                       value={filterDateFrom}
                       onChange={e => setFilterDateFrom(e.target.value)}
-                      style={{ width: '100%', padding: '0.4rem 0.6rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '0.4rem 0.6rem', border: '1px solid #86efac', borderRadius: '5px', fontSize: '0.85rem', boxSizing: 'border-box', background: '#fff' }}
                     />
                   </div>
                   <div>
-                    <label style={{ fontSize: '0.75rem', color: '#666', display: 'block', marginBottom: '0.25rem' }}>Date To</label>
+                    <label style={{ fontSize: '0.75rem', color: '#166534', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>📅 End Date</label>
                     <input
                       type="date"
                       value={filterDateTo}
                       onChange={e => setFilterDateTo(e.target.value)}
-                      style={{ width: '100%', padding: '0.4rem 0.6rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '0.4rem 0.6rem', border: '1px solid #86efac', borderRadius: '5px', fontSize: '0.85rem', boxSizing: 'border-box', background: '#fff' }}
                     />
                   </div>
                 </div>
@@ -484,8 +611,11 @@ export default function Admin() {
                     {filterTravelType && <span style={{ background: (TRAVEL_TYPE_COLORS[filterTravelType] || '#999') + '22', color: TRAVEL_TYPE_COLORS[filterTravelType] || '#555', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 600 }}>👥 {filterTravelType}</span>}
                     {filterStatus && <span style={{ background: '#f0f0f0', color: '#555', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.78rem' }}>📋 Status: {filterStatus}</span>}
                     {filterPaymentStatus && <span style={{ background: '#e8f5e9', color: '#2e7d32', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.78rem' }}>💳 Payment: {filterPaymentStatus}</span>}
-                    {filterDateFrom && <span style={{ background: '#fff3e0', color: '#e65100', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.78rem' }}>📅 From {filterDateFrom}</span>}
-                    {filterDateTo && <span style={{ background: '#fff3e0', color: '#e65100', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.78rem' }}>📅 To {filterDateTo}</span>}
+                    {(filterDateFrom || filterDateTo) && (
+                      <span style={{ background: '#fff3e0', color: '#e65100', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.78rem' }}>
+                        📅 Date: {filterDateFrom || 'Start'} → {filterDateTo || 'End'}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -925,65 +1055,158 @@ export default function Admin() {
               <form onSubmit={saveCredentials}>
                 <div className="form-group" style={{ marginBottom: '1rem' }}>
                   <label>Current Password *</label>
-                  <input name="currentPassword" type="password" className="form-control" placeholder="Enter current password" required />
+                  <input name="currentPassword" type={showAdminCredPassword ? 'text' : 'password'} className="form-control" placeholder="Enter current password" required />
                 </div>
                 <hr style={{ border: 'none', borderTop: '1px dashed #ddd', margin: '1rem 0' }} />
                 <div className="form-group" style={{ marginBottom: '1rem' }}>
                   <label>New Email (Optional)</label>
                   <input name="newEmail" type="email" className="form-control" placeholder="Enter new email address" />
                 </div>
-                <div className="form-group" style={{ marginBottom: '1.2rem' }}>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
                   <label>New Password (Optional)</label>
-                  <input name="newPassword" type="password" className="form-control" placeholder="Enter new password" />
+                  <input name="newPassword" type={showAdminCredPassword ? 'text' : 'password'} className="form-control" placeholder="Enter new password" />
+                </div>
+                <div className="form-group" style={{ marginBottom: '1.2rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.88rem', color: '#444' }}>
+                    <input type="checkbox" checked={showAdminCredPassword} onChange={e => setShowAdminCredPassword(e.target.checked)} style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#173D2F' }} />
+                    Show password
+                  </label>
                 </div>
                 <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Update Credentials</button>
               </form>
             ) : (
               <div>
-                <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1rem' }}>
-                  Reset password via 6-digit OTP verification code sent to your admin email address (<strong suppressHydrationWarning>{mounted ? user.email : ''}</strong>).
-                </p>
+                {/* 3 Step Progress Bar */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.25rem', padding: '0 0.2rem' }}>
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: '50%', background: adminOtpStep >= 1 ? '#173D2F' : '#e0e0e0', color: adminOtpStep >= 1 ? '#fff' : '#666', fontSize: '0.75rem', fontWeight: 700 }}>1</span>
+                    <div style={{ fontSize: '0.72rem', fontWeight: adminOtpStep === 1 ? 700 : 400, color: adminOtpStep === 1 ? '#173D2F' : '#666', marginTop: '0.25rem' }}>1. Enter Email</div>
+                  </div>
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: '50%', background: adminOtpStep >= 2 ? '#173D2F' : '#e0e0e0', color: adminOtpStep >= 2 ? '#fff' : '#666', fontSize: '0.75rem', fontWeight: 700 }}>2</span>
+                    <div style={{ fontSize: '0.72rem', fontWeight: adminOtpStep === 2 ? 700 : 400, color: adminOtpStep === 2 ? '#173D2F' : '#666', marginTop: '0.25rem' }}>2. OTP Verification</div>
+                  </div>
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: '50%', background: adminOtpStep >= 3 ? '#173D2F' : '#e0e0e0', color: adminOtpStep >= 3 ? '#fff' : '#666', fontSize: '0.75rem', fontWeight: 700 }}>3</span>
+                    <div style={{ fontSize: '0.72rem', fontWeight: adminOtpStep === 3 ? 700 : 400, color: adminOtpStep === 3 ? '#173D2F' : '#666', marginTop: '0.25rem' }}>3. New Password</div>
+                  </div>
+                </div>
 
-                {!otpSent ? (
-                  <button
-                    type="button"
-                    onClick={handleSendAdminOtp}
-                    disabled={otpLoading}
-                    className="btn btn-primary"
-                    style={{ width: '100%', padding: '0.65rem' }}
-                    suppressHydrationWarning
-                  >
-                    {otpLoading ? 'Sending OTP...' : `📩 Send OTP to ${mounted ? user.email : ''}`}
-                  </button>
-                ) : (
-                  <form onSubmit={handleVerifyAndResetAdminOtp}>
-                    <div style={{ background: '#e0f2fe', color: '#0369a1', padding: '0.6rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', marginBottom: '1rem' }}>
-                      ✓ OTP sent to {user.email}. Check inbox/spam folder.
+                {/* Alerts */}
+                {adminOtpError && (
+                  <div style={{ background: '#fde8e8', color: '#c0392b', padding: '0.6rem 0.8rem', borderRadius: '6px', fontSize: '0.82rem', marginBottom: '1rem' }}>
+                    ⚠️ {adminOtpError}
+                  </div>
+                )}
+                {adminOtpSuccess && (
+                  <div style={{ background: '#e8f8f0', color: '#1a7a4a', padding: '0.6rem 0.8rem', borderRadius: '6px', fontSize: '0.82rem', marginBottom: '1rem' }}>
+                    ✅ {adminOtpSuccess}
+                  </div>
+                )}
+
+                {/* Step 1: Enter Email */}
+                {adminOtpStep === 1 && (
+                  <form onSubmit={handleSendAdminOtp}>
+                    <p style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: '1rem' }}>
+                      Enter your admin email address to receive a 6-digit OTP verification code.
+                    </p>
+                    <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                      <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Admin Registered Email *</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        placeholder="yourname@gmail.com"
+                        value={adminEmailInput}
+                        onChange={e => setAdminEmailInput(e.target.value)}
+                        required
+                        disabled={adminOtpLoading}
+                      />
                     </div>
-                    <div className="form-group" style={{ marginBottom: '1rem' }}>
-                      <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Enter 6-digit OTP Code *</label>
+                    <button type="submit" disabled={adminOtpLoading} className="btn btn-primary" style={{ width: '100%', padding: '0.65rem' }}>
+                      {adminOtpLoading ? 'Sending OTP...' : 'Send OTP Code →'}
+                    </button>
+                  </form>
+                )}
+
+                {/* Step 2: OTP Verification */}
+                {adminOtpStep === 2 && (
+                  <form onSubmit={handleVerifyAdminOtp}>
+                    <p style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: '1rem' }}>
+                      A 6-digit OTP code was sent to <strong style={{ color: '#173D2F' }}>{adminEmailInput}</strong>. Enter it below to verify.
+                    </p>
+                    <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                      <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Enter 6-Digit OTP Code *</label>
                       <input
                         type="text"
                         className="form-control"
                         placeholder="e.g. 482910"
-                        value={otpCode}
-                        onChange={e => setOtpCode(e.target.value)}
+                        value={adminOtpCode}
+                        onChange={e => setAdminOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        maxLength={6}
                         required
+                        disabled={adminOtpLoading}
+                        style={{ letterSpacing: '0.2rem', textAlign: 'center', fontSize: '1.2rem', fontWeight: 700 }}
                       />
                     </div>
-                    <div className="form-group" style={{ marginBottom: '1.2rem' }}>
-                      <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Enter New Password *</label>
+                    <button type="submit" disabled={adminOtpLoading} className="btn btn-primary" style={{ width: '100%', padding: '0.65rem', marginBottom: '0.6rem' }}>
+                      {adminOtpLoading ? 'Verifying OTP...' : 'Verify OTP Code →'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setAdminOtpStep(1); setAdminOtpError(''); setAdminOtpSuccess(''); }}
+                      style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '0.8rem', width: '100%', textDecoration: 'underline' }}
+                    >
+                      ← Change Email
+                    </button>
+                  </form>
+                )}
+
+                {/* Step 3: New Password */}
+                {adminOtpStep === 3 && (
+                  <form onSubmit={handleResetAdminPassword}>
+                    <p style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: '1rem' }}>
+                      OTP verified! ✅ Create a new strong password for your admin account.
+                    </p>
+                    <div className="form-group" style={{ marginBottom: '1rem' }}>
+                      <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>New Password *</label>
                       <input
-                        type="password"
+                        type={showAdminCredPassword ? 'text' : 'password'}
                         className="form-control"
-                        placeholder="Enter your new password"
-                        value={otpNewPassword}
-                        onChange={e => setOtpNewPassword(e.target.value)}
+                        placeholder="Minimum 6 characters"
+                        value={adminOtpNewPassword}
+                        onChange={e => setAdminOtpNewPassword(e.target.value)}
                         required
+                        disabled={adminOtpLoading}
                       />
                     </div>
-                    <button type="submit" disabled={otpLoading} className="btn btn-primary" style={{ width: '100%', padding: '0.65rem' }}>
-                      {otpLoading ? 'Verifying & Resetting...' : 'Reset Password'}
+                    <div className="form-group" style={{ marginBottom: '1rem' }}>
+                      <label style={{ fontWeight: 600, fontSize: '0.85rem' }}>Confirm New Password *</label>
+                      <input
+                        type={showAdminCredPassword ? 'text' : 'password'}
+                        className="form-control"
+                        placeholder="Re-enter new password"
+                        value={adminOtpConfirmPassword}
+                        onChange={e => setAdminOtpConfirmPassword(e.target.value)}
+                        required
+                        disabled={adminOtpLoading}
+                      />
+                    </div>
+
+                    {/* Mandatory Show Password Checkbox */}
+                    <div className="form-group" style={{ marginBottom: '1.2rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.88rem', color: '#444' }}>
+                        <input
+                          type="checkbox"
+                          checked={showAdminCredPassword}
+                          onChange={e => setShowAdminCredPassword(e.target.checked)}
+                          style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#173D2F' }}
+                        />
+                        Show password
+                      </label>
+                    </div>
+
+                    <button type="submit" disabled={adminOtpLoading} className="btn btn-primary" style={{ width: '100%', padding: '0.65rem' }}>
+                      {adminOtpLoading ? 'Resetting Password...' : '🔒 Reset Password'}
                     </button>
                   </form>
                 )}
