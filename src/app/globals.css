@@ -144,6 +144,16 @@ img {
   color: var(--text-dark);
 }
 
+.navbar.scrolled .nav-links a.btn-outline {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.navbar.scrolled .nav-links a.btn-outline:hover {
+  color: var(--bg-white);
+  background-color: var(--primary-color);
+}
+
 .navbar.scrolled .logo-text {
   color: var(--primary-color);
 }

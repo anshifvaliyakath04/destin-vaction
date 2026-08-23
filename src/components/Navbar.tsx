@@ -2,10 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+
+  const isHeroPage = pathname === '/' || pathname.startsWith('/destination');
+  const isSolid = !isHeroPage || scrolled;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -14,7 +19,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+    <nav className={`navbar ${isSolid ? 'scrolled' : ''}`}>
       <div className="container nav-container">
         <Link href="/" className="logo">
           <img src="/assets/logo.png" alt="Destin Vacations" />
@@ -25,14 +30,14 @@ export default function Navbar() {
         </div>
 
         <ul className={`nav-links ${mobileOpen ? 'active' : ''}`}>
-          <li><a href="#home" onClick={() => setMobileOpen(false)}>Home</a></li>
-          <li><a href="#destinations" onClick={() => setMobileOpen(false)}>Destinations</a></li>
-          <li><a href="#services" onClick={() => setMobileOpen(false)}>Services</a></li>
-          <li><a href="#contact" onClick={() => setMobileOpen(false)}>Contact</a></li>
+          <li><Link href="/" onClick={() => setMobileOpen(false)}>Home</Link></li>
+          <li><a href="/#destinations" onClick={() => setMobileOpen(false)}>Destinations</a></li>
+          <li><a href="/#services" onClick={() => setMobileOpen(false)}>Services</a></li>
+          <li><a href="/#contact" onClick={() => setMobileOpen(false)}>Contact</a></li>
           <li id="auth-link">
-            <a href="/login" className="btn btn-outline" style={{ padding: '0.5rem 1.5rem', marginLeft: '1rem' }}>
+            <Link href="/login" className="btn btn-outline" style={{ padding: '0.5rem 1.5rem', marginLeft: '1rem' }}>
               Login
-            </a>
+            </Link>
           </li>
         </ul>
       </div>
