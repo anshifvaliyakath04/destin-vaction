@@ -305,11 +305,10 @@ export default function Planner() {
             </div>
           )}
 
-          <div className="step-nav" style={{ padding: '0 3rem 3rem 3rem' }}>
-            <button type="button" className="btn btn-outline" onClick={prev} style={{ display: 'inline-block' }}>
+          <div className="step-nav">
+            <button type="button" className="btn btn-outline" onClick={prev}>
               <i className="fa-solid fa-arrow-left"></i> {currentStep === 1 ? 'Back to Destinations' : 'Back'}
             </button>
-            <div style={{ flexGrow: 1 }}></div>
             {currentStep < 6 ? (
               <button type="button" className="btn btn-primary" onClick={next}>Continue to Step {currentStep + 1} <i className="fa-solid fa-arrow-right"></i></button>
             ) : (

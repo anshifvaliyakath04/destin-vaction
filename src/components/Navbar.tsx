@@ -30,7 +30,20 @@ export default function Navbar() {
         </div>
 
         <ul className={`nav-links ${mobileOpen ? 'active' : ''}`}>
-          <li><Link href="/" onClick={() => setMobileOpen(false)}>Home</Link></li>
+          <li>
+            <a
+              href="/#home"
+              onClick={(e) => {
+                setMobileOpen(false);
+                if (pathname === '/') {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+            >
+              Home
+            </a>
+          </li>
           <li><a href="/#destinations" onClick={() => setMobileOpen(false)}>Destinations</a></li>
           <li><a href="/#services" onClick={() => setMobileOpen(false)}>Services</a></li>
           <li><a href="/#contact" onClick={() => setMobileOpen(false)}>Contact</a></li>

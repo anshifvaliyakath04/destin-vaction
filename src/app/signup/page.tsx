@@ -62,6 +62,11 @@ export default function Signup() {
         </form>
         <div className="auth-footer">
           <p>Already have an account? <Link href="/login">Login</Link></p>
+          <p style={{ marginTop: '1rem', borderTop: '1px solid #eee', paddingTop: '0.8rem' }}>
+            <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.88rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+              <i className="fa-solid fa-arrow-left" style={{ fontSize: '0.8rem' }}></i> Back to Home
+            </Link>
+          </p>
         </div>
       </div>
     </div>
