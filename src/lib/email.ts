@@ -8,30 +8,27 @@ export function resetTransporter() {
 }
 
 export async function getTransporter() {
-  if (transporter) return transporter;
-
   const { data: settings } = await supabaseServer.from('settings').select('*').limit(1).maybeSingle() as any;
   
-  const emailUser = settings?.email_user || process.env.EMAIL_USER;
-  const emailPass = settings?.email_pass || process.env.EMAIL_PASS;
-  const emailHost = settings?.email_host || process.env.SMTP_HOST || 'smtp.office365.com';
+  const emailUser = (settings?.email_user || process.env.EMAIL_USER || '').trim();
+  const rawEmailPass = (settings?.email_pass || process.env.EMAIL_PASS || '').trim();
+  const emailPass = rawEmailPass.replace(/\s+/g, '');
+  const emailHost = (settings?.email_host || process.env.SMTP_HOST || 'smtp.gmail.com').trim();
   const emailPort = settings?.email_port || parseInt(process.env.SMTP_PORT || '587');
   const emailSecure = settings?.email_secure ?? (process.env.SMTP_SECURE === 'true');
 
   if (!emailUser || !emailPass) {
-    console.log('No email credentials configured');
+    console.warn('No SMTP email credentials configured in settings or environment.');
     return null;
   }
 
-  transporter = nodemailer.createTransport({
+  return nodemailer.createTransport({
     host: emailHost,
     port: emailPort,
     secure: emailSecure,
     auth: { user: emailUser, pass: emailPass },
-    tls: { ciphers: 'SSLv3', rejectUnauthorized: false },
+    tls: { rejectUnauthorized: false },
   });
-
-  return transporter;
 }
 
 export async function sendEmail(to: string, subject: string, html: string) {
@@ -221,11 +218,17 @@ export async function sendConfirmationEmail(trip: any, reason: string = '') {
     return;
   }
 
-  await t.sendMail({
-    from: `"${fromName}" <${fromEmail}>`,
-    replyTo,
-    to: recipientEmail,
-    subject,
-    html: htmlContent
-  });
+  try {
+    const info = await t.sendMail({
+      from: `"${fromName}" <${fromEmail}>`,
+      replyTo,
+      to: recipientEmail,
+      subject,
+      html: htmlContent
+    });
+    console.log(` Confirmation email sent successfully to ${recipientEmail}. MessageId: ${info.messageId}`);
+  } catch (sendErr) {
+    console.error(`Failed to send confirmation email to ${recipientEmail}:`, sendErr);
+    throw sendErr;
+  }
 }
