@@ -17,15 +17,18 @@ export default function Footer() {
           </div>
           <div className="footer-col">
             <h3>Quick Links</h3>
+            <nav aria-label="Quick links">
             <div className="footer-links">
               <Link href="/#home">Home</Link>
               <Link href="/#destinations">Destinations</Link>
               <Link href="/#services">Services</Link>
               <Link href="/#contact">Contact</Link>
             </div>
+            </nav>
           </div>
           <div className="footer-col">
             <h3>Destinations</h3>
+            <nav aria-label="Destinations">
             <div className="footer-links">
               <Link href="/destination?id=munnar">Munnar</Link>
               <Link href="/destination?id=alleppey">Alleppey</Link>
@@ -34,6 +37,7 @@ export default function Footer() {
               <Link href="/destination?id=cochin">Cochin</Link>
               <Link href="/destination?id=thekkady">Thekkady</Link>
             </div>
+            </nav>
           </div>
           <div className="footer-col">
             <h3>Contact Us</h3>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabaseBrowser } from '@/lib/supabase-browser';
+import { SITE_URL, SITE_NAME } from '@/lib/seo';
 
 export default function Home() {
   const [settings, setSettings] = useState<{ whatsapp_number: string }>({ whatsapp_number: '919526886600' });
@@ -92,9 +93,29 @@ export default function Home() {
     }
   };
 
+  const homepageJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Kerala Travel Destinations',
+    description: 'Popular Kerala destinations offered by Destin Vacations',
+    numberOfItems: 11,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Munnar', url: `${SITE_URL}/destination?id=munnar` },
+      { '@type': 'ListItem', position: 2, name: 'Alleppey', url: `${SITE_URL}/destination?id=alleppey` },
+      { '@type': 'ListItem', position: 3, name: 'Wayanad', url: `${SITE_URL}/destination?id=wayanad` },
+      { '@type': 'ListItem', position: 4, name: 'Ponmudi', url: `${SITE_URL}/destination?id=ponmudi` },
+      { '@type': 'ListItem', position: 5, name: 'Peermade', url: `${SITE_URL}/destination?id=peermade` },
+      { '@type': 'ListItem', position: 6, name: 'Vagamon', url: `${SITE_URL}/destination?id=vagamon` },
+      { '@type': 'ListItem', position: 7, name: 'Vattavada', url: `${SITE_URL}/destination?id=vattavada` },
+      { '@type': 'ListItem', position: 8, name: 'Cochin', url: `${SITE_URL}/destination?id=cochin` },
+      { '@type': 'ListItem', position: 9, name: 'Thekkady', url: `${SITE_URL}/destination?id=thekkady` },
+    ],
+  };
+
   return (
     <>
       <Navbar />
+      <main>
 
       {/* Hero Section */}
       <section id="home" className="hero">
@@ -202,8 +223,15 @@ export default function Home() {
         </div>
       </section>
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(homepageJsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
+
       {/* Floating WhatsApp */}
-      <a href={`https://wa.me/${settings.whatsapp_number}`} className="floating-whatsapp" target="_blank" rel="noopener noreferrer">
+      <a href={`https://wa.me/${settings.whatsapp_number}`} className="floating-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Contact us on WhatsApp">
         <i className="fa-brands fa-whatsapp"></i>
       </a>
 
@@ -311,7 +339,7 @@ export default function Home() {
           </div>
         </div>
       )}
-
+      </main>
       <Footer />
     </>
   );
@@ -320,7 +348,7 @@ export default function Home() {
 function DestCard({ name, image, desc, mustVisit, id, disabled, hidden }: { name: string; image: string; desc: string; mustVisit: string; id: string; disabled?: boolean; hidden?: boolean }) {
   return (
     <div className={`dest-card ${hidden ? 'extra-dest' : ''}`} data-id={id} style={{ display: hidden ? 'none' : undefined, cursor: disabled ? 'default' : 'pointer' }}>
-      <img src={image} alt={name} className="dest-img" />
+      <img src={image} alt={`${name} – Kerala travel destination`} className="dest-img" />
       <div className="dest-info">
         <h3>{name}</h3>
         <p>{desc}</p>

@@ -188,8 +188,9 @@ function DestinationContent() {
   return (
     <>
       <Navbar />
+      <main>
       {/* Hero Banner Header */}
-      <div className="dest-header" style={{ backgroundImage: `url('${data.image}')` }}>
+      <div className="dest-header" style={{ backgroundImage: `url('${data.image}')` }} role="img" aria-label={`${data.title} Kerala destination landscape`}>
         <div className="container dest-header-content">
           <button
             type="button"
@@ -262,7 +263,7 @@ function DestinationContent() {
                   style={{ cursor: 'pointer' }}
                   title={`Click to view ${place.name}`}
                 >
-                  <img src={place.img} alt={place.name} className="place-img" />
+                  <img src={place.img} alt={`${place.name}, ${data.title} – Kerala`} className="place-img" />
                   <div className="place-info">
                     <h4 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span>{place.name}</span>
@@ -363,7 +364,7 @@ function DestinationContent() {
             <div style={{ position: 'relative' }}>
               <img
                 src={selectedPlace.img}
-                alt={selectedPlace.name}
+                alt={`${selectedPlace.name}, ${data.title} – Kerala attraction`}
                 style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', display: 'block' }}
               />
               <button
@@ -422,7 +423,9 @@ function DestinationContent() {
         </div>
       )}
 
-      <a href={`https://wa.me/919526886600`} className="floating-whatsapp" target="_blank" rel="noopener noreferrer">
+      </main>
+
+      <a href={`https://wa.me/919526886600`} className="floating-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Contact us on WhatsApp">
         <i className="fa-brands fa-whatsapp"></i>
       </a>
 

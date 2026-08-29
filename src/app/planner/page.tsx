@@ -131,6 +131,7 @@ export default function Planner() {
   return (
     <>
       <Navbar />
+      <main>
       <div className="container" style={{ paddingTop: '100px', paddingBottom: '4rem' }}>
         <div className="planner-container">
           <div className="progress-container">
@@ -317,6 +318,7 @@ export default function Planner() {
           </div>
         </div>
       </div>
+      </main>
       <Footer />
     </>
   );
