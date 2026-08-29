@@ -10,6 +10,21 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'destin.in' }],
+        destination: 'https://www.destin.in/:path*',
+        permanent: true,
+      },
+      {
+        source: '/destination.html',
+        destination: '/destination',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

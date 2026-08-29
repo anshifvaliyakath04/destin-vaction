@@ -18,21 +18,21 @@ export default function Footer() {
           <div className="footer-col">
             <h3>Quick Links</h3>
             <div className="footer-links">
-              <a href="#home">Home</a>
-              <a href="#destinations">Destinations</a>
-              <a href="#services">Services</a>
-              <a href="#contact">Contact</a>
+              <Link href="/#home">Home</Link>
+              <Link href="/#destinations">Destinations</Link>
+              <Link href="/#services">Services</Link>
+              <Link href="/#contact">Contact</Link>
             </div>
           </div>
           <div className="footer-col">
             <h3>Destinations</h3>
             <div className="footer-links">
-              <a href="/destination.html?id=munnar">Munnar</a>
-              <a href="/destination.html?id=alleppey">Alleppey</a>
-              <a href="/destination.html?id=wayanad">Wayanad</a>
-              <a href="/destination.html?id=varkala">Varkala</a>
-              <a href="/destination.html?id=cochin">Cochin</a>
-              <a href="/destination.html?id=thekkady">Thekkady</a>
+              <Link href="/destination?id=munnar">Munnar</Link>
+              <Link href="/destination?id=alleppey">Alleppey</Link>
+              <Link href="/destination?id=wayanad">Wayanad</Link>
+              <Link href="/destination?id=ponmudi">Ponmudi</Link>
+              <Link href="/destination?id=cochin">Cochin</Link>
+              <Link href="/destination?id=thekkady">Thekkady</Link>
             </div>
           </div>
           <div className="footer-col">
