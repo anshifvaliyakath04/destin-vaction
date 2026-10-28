@@ -41,7 +41,7 @@ export default function Footer() {
           </div>
           <div className="footer-col">
             <h3>Contact Us</h3>
-            <p><i className="fa-solid fa-phone"></i> +91 95268 86600</p>
+            <p><i className="fa-solid fa-phone"></i> +91 7012638069</p>
             <p><i className="fa-solid fa-envelope"></i> Sales@destin.in</p>
             <p><i className="fa-solid fa-location-dot"></i> Kerala, India</p>
           </div>

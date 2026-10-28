@@ -7,7 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser';
 import { SITE_URL, SITE_NAME } from '@/lib/seo';
 
 export default function Home() {
-  const [settings, setSettings] = useState<{ whatsapp_number: string }>({ whatsapp_number: '919526886600' });
+  const [settings, setSettings] = useState<{ whatsapp_number: string }>({ whatsapp_number: '917012638069' });
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);

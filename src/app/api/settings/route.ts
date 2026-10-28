@@ -7,7 +7,7 @@ export async function GET() {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json({ whatsapp_number: data?.whatsapp_number || '919526886600' });
+    return NextResponse.json({ whatsapp_number: data?.whatsapp_number || '917012638069' });
   } catch (error) {
     console.error('Get public settings error:', error);
     return NextResponse.json({ error: 'Failed to fetch public settings' }, { status: 500 });

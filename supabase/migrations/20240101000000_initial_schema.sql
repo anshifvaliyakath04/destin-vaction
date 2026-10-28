@@ -65,7 +65,7 @@ create table public.testimonials (
 -- Settings table
 create table public.settings (
   id uuid default gen_random_uuid() primary key,
-  whatsapp_number text default '919526886600',
+  whatsapp_number text default '917012638069',
   email_user text default '',
   email_pass text default '',
   email_host text default '',

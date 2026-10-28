@@ -191,7 +191,7 @@ export async function sendConfirmationEmail(trip: any, reason: string = '') {
               <p style="margin: 0; font-weight: bold; color: #333;">Warm regards,</p>
               <p style="margin: 4px 0 0 0; font-weight: bold; color: #2ecc71;">Team Destin Vacations</p>
               <p style="margin: 6px 0 0 0;">📧 <a href="mailto:Sales@destin.in" style="color: #3498db; text-decoration: none;">Sales@destin.in</a></p>
-              <p style="margin: 4px 0 0 0;">📞 +91 9526886600</p>
+              <p style="margin: 4px 0 0 0;">📞 +91 7012638069</p>
           </div>
       </div>
     `;
@@ -210,7 +210,7 @@ export async function sendConfirmationEmail(trip: any, reason: string = '') {
               <p style="margin: 0; font-weight: bold; color: #333;">Warm regards,</p>
               <p style="margin: 4px 0 0 0; font-weight: bold; color: #e74c3c;">Team Destin Vacations</p>
               <p style="margin: 6px 0 0 0;">📧 <a href="mailto:Sales@destin.in" style="color: #3498db; text-decoration: none;">Sales@destin.in</a></p>
-              <p style="margin: 4px 0 0 0;">📞 +91 9526886600</p>
+              <p style="margin: 4px 0 0 0;">📞 +91 7012638069</p>
           </div>
       </div>
     `;

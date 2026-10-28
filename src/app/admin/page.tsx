@@ -52,7 +52,7 @@ const TRAVEL_TYPE_COLORS: Record<string, string> = {
 export default function Admin() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [settings, setSettings] = useState<Settings>({ whatsapp_number: '919526886600', email_user: '', email_from_name: 'Destin Vacations' });
+  const [settings, setSettings] = useState<Settings>({ whatsapp_number: '917012638069', email_user: '', email_from_name: 'Destin Vacations' });
   const [stats, setStats] = useState({ totalBookings: 0, totalRevenue: 0, pendingApprovals: 0, upcomingTrips: 0 });
 
   // Filters
@@ -902,8 +902,8 @@ export default function Admin() {
               
               <div className="form-group" style={{ marginBottom: '1.2rem' }}>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem', color: '#334155' }}>WhatsApp Business Number</label>
-                <small style={{ display: 'block', color: '#64748b', marginBottom: '0.3rem' }}>Include country code without '+' (e.g. 919526886600 for India)</small>
-                <input type="text" className="form-control" value={settings.whatsapp_number || ''} onChange={e => setSettings({ ...settings, whatsapp_number: e.target.value })} placeholder="919526886600" />
+                <small style={{ display: 'block', color: '#64748b', marginBottom: '0.3rem' }}>Include country code without '+' (e.g. 917012638069 for India)</small>
+                <input type="text" className="form-control" value={settings.whatsapp_number || ''} onChange={e => setSettings({ ...settings, whatsapp_number: e.target.value })} placeholder="917012638069" />
               </div>
 
               <div className="form-group" style={{ marginBottom: '1.2rem' }}>

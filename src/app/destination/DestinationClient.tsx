@@ -425,7 +425,7 @@ function DestinationContent() {
 
       </main>
 
-      <a href={`https://wa.me/919526886600`} className="floating-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Contact us on WhatsApp">
+      <a href={`https://wa.me/917012638069`} className="floating-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Contact us on WhatsApp">
         <i className="fa-brands fa-whatsapp"></i>
       </a>
 
